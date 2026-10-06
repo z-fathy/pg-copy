@@ -303,7 +303,7 @@ public sealed class CloneJob
 
                 // ---- Finalise ----
                 Phase(ClonePhase.Swap);
-                await ApplyDatabaseSettingsAsync(admin, staging, catalog.DatabaseSettings, ct);
+                await DatabaseSettings.ApplyAsync(admin, staging, catalog.DatabaseSettings, ct);
                 loadMode = false;
                 await target.ExitLoadModeAsync(ct);
                 await DatabaseAdmin.SwapAsync(admin, staging, _req.TargetDatabase, ct);
@@ -512,36 +512,6 @@ public sealed class CloneJob
                     }
                 }
             );
-        }
-
-        private static async Task ApplyDatabaseSettingsAsync(
-            NpgsqlConnection admin,
-            string database,
-            IReadOnlyList<(string Name, string[] Settings)> settings,
-            CancellationToken ct
-        )
-        {
-            // GUC_LIST_QUOTE parameters hold comma separated identifiers that must be re-quoted one by one.
-            string[] listParams = ["search_path", "temp_tablespaces", "session_preload_libraries", "local_preload_libraries"];
-            foreach (var (name, values) in settings)
-            {
-                var raw = values[0];
-                var rendered = listParams.Contains(name, StringComparer.OrdinalIgnoreCase)
-                    ? string.Join(", ", raw.Split(',').Select(v => DatabaseAdmin.Literal(v.Trim().Trim('"'))))
-                    : DatabaseAdmin.Literal(raw);
-                try
-                {
-                    await DatabaseAdmin.ExecAsync(
-                        admin,
-                        $"ALTER DATABASE {DatabaseAdmin.Ident(database)} SET {name} = {rendered}",
-                        ct
-                    );
-                }
-                catch (PostgresException)
-                {
-                    // Setting unknown on the target (e.g. an extension GUC); not worth failing the clone.
-                }
-            }
         }
 
         private static bool IsLargeObjectEntry(TocList.Entry e) =>

@@ -54,7 +54,7 @@ public sealed record SourceCatalogSnapshot(
     IReadOnlyList<ForeignKeyDefinition> TrustedForeignKeys,
     IReadOnlyList<string> Extensions,
     IReadOnlyList<string> PolicyRoles,
-    IReadOnlyList<(string Name, string[] Settings)> DatabaseSettings,
+    IReadOnlyList<(string Name, string Value)> DatabaseSettings,
     long LargeObjectCount,
     IReadOnlyList<string> RlsTables,
     IReadOnlyList<string> UnreadableTables,

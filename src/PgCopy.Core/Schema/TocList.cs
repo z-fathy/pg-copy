@@ -9,7 +9,47 @@ public sealed partial class TocList
     public const uint PgClassTable = 1259;
     public const uint PgConstraintTable = 2606;
 
-    public sealed record Entry(string Raw, uint CatalogTable, uint CatalogOid, string Rest);
+    // pg_dump entry descriptions made of several words; everything else is a single word.
+    private static readonly string[] MultiWordTypes =
+    [
+        "MATERIALIZED VIEW DATA",
+        "MATERIALIZED VIEW",
+        "TABLE DATA",
+        "TABLE ATTACH",
+        "INDEX ATTACH",
+        "SEQUENCE OWNED BY",
+        "SEQUENCE SET",
+        "FK CONSTRAINT",
+        "CHECK CONSTRAINT",
+        "USER MAPPING",
+        "FOREIGN TABLE",
+        "FOREIGN DATA WRAPPER",
+        "EVENT TRIGGER",
+        "ROW SECURITY",
+        "DEFAULT ACL",
+        "SHELL TYPE",
+        "BLOB METADATA",
+        "PUBLICATION TABLE",
+        "PUBLICATION TABLES IN SCHEMA",
+        "TEXT SEARCH CONFIGURATION",
+        "TEXT SEARCH DICTIONARY",
+        "TEXT SEARCH PARSER",
+        "TEXT SEARCH TEMPLATE",
+        "OPERATOR CLASS",
+        "OPERATOR FAMILY",
+        "STATISTICS DATA",
+        "ACCESS METHOD",
+        "DEFAULT",
+    ];
+
+    /// <param name="Rest">Everything after the catalog ids: type, schema, name, owner.</param>
+    public sealed record Entry(string Raw, uint CatalogTable, uint CatalogOid, string Rest)
+    {
+        /// <summary>The entry type, e.g. <c>INDEX</c>, <c>INDEX ATTACH</c> or <c>MATERIALIZED VIEW DATA</c>.</summary>
+        public string Type { get; } =
+            MultiWordTypes.FirstOrDefault(t => Rest.StartsWith(t + " ", StringComparison.Ordinal) || Rest == t)
+            ?? Rest.Split(' ', 2)[0];
+    }
 
     private readonly List<(string Line, Entry? Entry)> _lines;
 
@@ -44,8 +84,7 @@ public sealed partial class TocList
         return sb.ToString();
     }
 
-    public static bool IsType(Entry entry, string type) =>
-        entry.Rest.StartsWith(type + " ", StringComparison.Ordinal) || entry.Rest == type;
+    public static bool IsType(Entry entry, string type) => entry.Type == type;
 
     [GeneratedRegex(@"^(\d+); (\d+) (\d+) (.+)$")]
     private static partial Regex EntryPattern();

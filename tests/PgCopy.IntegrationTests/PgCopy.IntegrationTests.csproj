@@ -8,4 +8,11 @@
         <PackageReference Include="xunit.runner.visualstudio" />
         <ProjectReference Include="..\..\src\PgCopy.Core\PgCopy.Core.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="Scripts\compare.sh" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="Seed\zoo.sql" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>

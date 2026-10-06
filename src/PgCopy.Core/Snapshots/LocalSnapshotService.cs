@@ -25,6 +25,7 @@ public sealed class LocalSnapshotService
         var snap = SnapshotDatabaseName(database, name);
         await DatabaseAdmin.DropIfExistsAsync(conn, snap, ct);
         await CopyAsync(conn, database, snap, ct);
+        await DatabaseSettings.CopyAsync(conn, database, snap, ct);
     }
 
     public async Task RestoreAsync(string database, string name, CancellationToken ct)
@@ -36,6 +37,7 @@ public sealed class LocalSnapshotService
         var staging = database + "__pgcopy_tmp";
         await DatabaseAdmin.DropIfExistsAsync(conn, staging, ct);
         await CopyAsync(conn, snap, staging, ct);
+        await DatabaseSettings.CopyAsync(conn, snap, staging, ct);
         await DatabaseAdmin.SwapAsync(conn, staging, database, ct);
     }
 

@@ -72,7 +72,7 @@ public static class DataCopyStage
                 .SelectMany(w => w.Exception!.InnerExceptions)
                 .FirstOrDefault(e => e is not OperationCanceledException);
             if (real is not null)
-                throw real;
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(real).Throw();
             ct.ThrowIfCancellationRequested();
             throw;
         }

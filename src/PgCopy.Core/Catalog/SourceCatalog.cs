@@ -348,12 +348,12 @@ public static class SourceCatalog
         return (early, fks);
     }
 
-    private static async Task<IReadOnlyList<(string Name, string[] Settings)>> ReadDatabaseSettingsAsync(
+    private static async Task<IReadOnlyList<(string Name, string Value)>> ReadDatabaseSettingsAsync(
         NpgsqlConnection conn,
         CancellationToken ct
     )
     {
-        var result = new List<(string, string[])>();
+        var result = new List<(string, string)>();
         await using var cmd = new NpgsqlCommand(
             "select setconfig from pg_db_role_setting where setrole = 0 and setdatabase = (select oid from pg_database where datname = current_database())",
             conn
@@ -365,7 +365,7 @@ public static class SourceCatalog
             {
                 var idx = entry.IndexOf('=');
                 if (idx > 0)
-                    result.Add((entry[..idx], [entry[(idx + 1)..]]));
+                    result.Add((entry[..idx], entry[(idx + 1)..]));
             }
         }
         return result;

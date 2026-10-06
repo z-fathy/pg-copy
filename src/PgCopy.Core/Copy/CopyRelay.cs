@@ -33,6 +33,7 @@ public static class CopyRelay
             new PipeOptions(
                 pauseWriterThreshold: PipeHighWater,
                 resumeWriterThreshold: PipeLowWater,
+                minimumSegmentSize: ReadChunk,
                 useSynchronizationContext: false
             )
         );
@@ -45,7 +46,9 @@ public static class CopyRelay
                 {
                     while (true)
                     {
-                        var memory = pipe.Writer.GetMemory(ReadChunk);
+                        // A small hint lets reads fill the rest of the current segment; a hint as large as the segment
+                        // would allocate a fresh 256 KB segment for every (much smaller) network read.
+                        var memory = pipe.Writer.GetMemory(4096);
                         var n = await reader.ReadAsync(memory, ct);
                         if (n == 0)
                             break;

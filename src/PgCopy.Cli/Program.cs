@@ -62,7 +62,11 @@ var asOption = new Option<string?>("--as")
 {
     Description = "Local database name (single --db only); defaults to the source name",
 };
-var jobsOption = new Option<int>("--jobs", "-j") { Description = "Parallel COPY streams", DefaultValueFactory = _ => 8 };
+var jobsOption = new Option<int>("--jobs", "-j")
+{
+    Description = "Parallel COPY streams",
+    DefaultValueFactory = _ => new CloneOptions().Jobs,
+};
 var indexJobsOption = new Option<int>("--index-jobs")
 {
     Description = "Parallel index builds (default: half the target CPUs)",
@@ -71,7 +75,7 @@ var indexJobsOption = new Option<int>("--index-jobs")
 var splitOption = new Option<string>("--split-size")
 {
     Description = "Split tables larger than this into parallel ranges ('off' to disable)",
-    DefaultValueFactory = _ => "1GB",
+    DefaultValueFactory = _ => "128MB",
 };
 var noBinaryOption = new Option<bool>("--no-binary") { Description = "Always use text COPY" };
 var noEarlyOption = new Option<bool>("--no-early-indexes")

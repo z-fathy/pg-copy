@@ -2,14 +2,14 @@ namespace PgCopy.Core.Orchestration;
 
 public sealed record CloneOptions
 {
-    /// <summary>Parallel COPY streams.</summary>
-    public int Jobs { get; init; } = 8;
+    /// <summary>Parallel COPY streams. More streams than cores only helps when the network, not the CPU, is the limit.</summary>
+    public int Jobs { get; init; } = Math.Clamp(Environment.ProcessorCount, 4, 8);
 
     /// <summary>Parallel index builds on the target; 0 = half the target's CPUs (at least 2).</summary>
     public int IndexJobs { get; init; }
 
     /// <summary>Tables larger than this are split into ctid ranges copied in parallel; 0 disables splitting.</summary>
-    public long SplitSizeBytes { get; init; } = 1L << 30;
+    public long SplitSizeBytes { get; init; } = 128L << 20;
 
     public bool UseBinary { get; init; } = true;
 

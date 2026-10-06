@@ -5,8 +5,9 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-DROP ROLE IF EXISTS zoo_reader;
-CREATE ROLE zoo_reader NOLOGIN;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'zoo_reader') THEN CREATE ROLE zoo_reader NOLOGIN; END IF;
+END $$;
 CREATE SCHEMA sales;
 CREATE SCHEMA "Odd Schema";
 
@@ -109,7 +110,7 @@ CREATE POLICY scratch_read ON sales.scratch FOR SELECT TO zoo_reader USING (true
 CREATE POLICY scratch_all ON sales.scratch USING (true);
 
 -- DB-level setting + sequences with non-trivial state
-ALTER DATABASE zoo SET search_path = 'public', 'sales';
+ALTER DATABASE __DB__ SET search_path = 'public', 'sales';
 CREATE SEQUENCE sales.invoice_seq START 1000 INCREMENT 5;
 
 -- ===== Data =====

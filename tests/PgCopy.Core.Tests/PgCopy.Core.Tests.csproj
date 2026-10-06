@@ -8,4 +8,7 @@
         <PackageReference Include="xunit.runner.visualstudio" />
         <ProjectReference Include="..\..\src\PgCopy.Core\PgCopy.Core.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
 </Project>
