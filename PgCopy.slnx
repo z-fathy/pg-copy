@@ -1,0 +1,10 @@
+<Solution>
+    <Folder Name="/src/">
+        <Project Path="src/PgCopy.Core/PgCopy.Core.csproj" />
+        <Project Path="src/PgCopy.Cli/PgCopy.Cli.csproj" />
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/PgCopy.Core.Tests/PgCopy.Core.Tests.csproj" />
+        <Project Path="tests/PgCopy.IntegrationTests/PgCopy.IntegrationTests.csproj" />
+    </Folder>
+</Solution>

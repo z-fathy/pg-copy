@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+
+[*.{cs,csproj,props,slnx,json,yml,yaml}]
+indent_style = space
+indent_size = 4
+max_line_length = 128
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
