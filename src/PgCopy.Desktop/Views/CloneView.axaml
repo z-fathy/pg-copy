@@ -1,0 +1,290 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:PgCopy.Desktop.ViewModels"
+  x:Class="PgCopy.Desktop.Views.CloneView"
+  x:DataType="vm:CloneViewModel"
+>
+  <Grid ColumnDefinitions="400,*" Margin="8">
+    <!-- ===== Left: connection + options ===== -->
+    <ScrollViewer Grid.Column="0" Padding="0,0,12,0">
+      <StackPanel Spacing="12">
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Remote source" />
+            <ComboBox
+              ItemsSource="{Binding Profiles}"
+              SelectedItem="{Binding SelectedProfile}"
+              PlaceholderText="Saved connections…"
+              HorizontalAlignment="Stretch"
+            />
+            <Grid ColumnDefinitions="*,90" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Text="{Binding Source.Host}" PlaceholderText="Host" />
+              <NumericUpDown
+                Grid.Column="1"
+                Value="{Binding Source.Port}"
+                Minimum="1"
+                Maximum="65535"
+                FormatString="0"
+                ShowButtonSpinner="False"
+              />
+            </Grid>
+            <TextBox Text="{Binding Source.Username}" PlaceholderText="User" />
+            <TextBox Text="{Binding Source.Password}" PasswordChar="●" PlaceholderText="Password" />
+            <ComboBox
+              ItemsSource="{x:Static vm:ConnectionFormViewModel.SslModes}"
+              SelectedItem="{Binding Source.SslMode}"
+              HorizontalAlignment="Stretch"
+            />
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+              <TextBox
+                Grid.Column="0"
+                Text="{Binding ProfileName}"
+                PlaceholderText="Profile name"
+              />
+              <Button
+                Grid.Column="1"
+                Content="Save"
+                Command="{Binding SaveProfileCommand}"
+                Margin="0,0,0,6"
+              />
+              <Button
+                Grid.Column="2"
+                Content="Delete"
+                Command="{Binding DeleteProfileCommand}"
+                Margin="0,0,0,6"
+              />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Local target" />
+            <RadioButton
+              GroupName="target"
+              Content="Managed Docker container (recommended)"
+              IsChecked="{Binding Target.UseDocker}"
+            />
+            <StackPanel IsVisible="{Binding Target.UseDocker}" Margin="28,2,0,8">
+              <Grid ColumnDefinitions="Auto,100" ColumnSpacing="8">
+                <TextBlock Text="PostgreSQL major" VerticalAlignment="Center" />
+                <NumericUpDown
+                  Grid.Column="1"
+                  Value="{Binding Target.DockerMajor}"
+                  Minimum="12"
+                  Maximum="30"
+                  FormatString="0"
+                  Margin="0"
+                />
+              </Grid>
+              <TextBlock
+                Classes="caption"
+                TextWrapping="Wrap"
+                Margin="0,6,0,0"
+                Text="Started on demand with the same major version as the source and tuned for bulk loading. Data lives in a Docker volume."
+              />
+            </StackPanel>
+            <RadioButton
+              GroupName="target"
+              Content="Existing local server"
+              IsChecked="{Binding Target.UseExisting}"
+            />
+            <StackPanel IsVisible="{Binding Target.UseExisting}" Margin="28,6,0,0">
+              <Grid ColumnDefinitions="*,90" ColumnSpacing="8">
+                <TextBox
+                  Grid.Column="0"
+                  Text="{Binding Target.Existing.Host}"
+                  PlaceholderText="Host"
+                />
+                <NumericUpDown
+                  Grid.Column="1"
+                  Value="{Binding Target.Existing.Port}"
+                  Minimum="1"
+                  Maximum="65535"
+                  FormatString="0"
+                  ShowButtonSpinner="False"
+                />
+              </Grid>
+              <TextBox Text="{Binding Target.Existing.Username}" PlaceholderText="User" />
+              <TextBox
+                Text="{Binding Target.Existing.Password}"
+                PasswordChar="●"
+                PlaceholderText="Password"
+              />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Speed options" />
+            <Grid ColumnDefinitions="*,110" ColumnSpacing="8">
+              <TextBlock Text="Parallel copy streams" VerticalAlignment="Center" />
+              <NumericUpDown
+                Grid.Column="1"
+                Value="{Binding Jobs}"
+                Minimum="1"
+                Maximum="32"
+                FormatString="0"
+                Margin="0,0,0,6"
+              />
+            </Grid>
+            <Grid ColumnDefinitions="*,110" ColumnSpacing="8">
+              <TextBlock Text="Split tables larger than" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" Text="{Binding SplitSize}" />
+            </Grid>
+            <CheckBox IsChecked="{Binding UseBinary}" Content="Binary COPY where safe" />
+            <CheckBox
+              IsChecked="{Binding EarlyIndexes}"
+              Content="Build indexes while data is still copying"
+            />
+            <CheckBox
+              IsChecked="{Binding TrustedForeignKeys}"
+              Content="Trust source foreign keys (skip re-validation)"
+            />
+            <CheckBox IsChecked="{Binding SafeLoad}" Content="Safe load (keep fsync on — slower)" />
+            <CheckBox
+              IsChecked="{Binding SkipMatviewRefresh}"
+              Content="Skip materialized view refresh"
+            />
+            <TextBlock
+              Classes="caption"
+              Text="Skip rows of tables matching (schema.table, one per line)"
+              Margin="0,8,0,2"
+            />
+            <TextBox
+              Text="{Binding ExcludeTableData}"
+              AcceptsReturn="True"
+              Height="64"
+              PlaceholderText="audit.*"
+            />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- ===== Right: databases + progress ===== -->
+    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+      <Border Grid.Row="0" Classes="card">
+        <StackPanel>
+          <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6" Margin="0,0,0,8">
+            <TextBlock
+              Classes="h2"
+              Text="Databases to replicate"
+              VerticalAlignment="Center"
+              Margin="0"
+            />
+            <Button
+              Grid.Column="1"
+              Content="Load databases"
+              Command="{Binding LoadDatabasesCommand}"
+            />
+            <Button Grid.Column="2" Content="Select all" Command="{Binding SelectAllCommand}" />
+            <Button Grid.Column="3" Content="None" Command="{Binding SelectNoneCommand}" />
+          </Grid>
+          <ListBox
+            ItemsSource="{Binding Databases}"
+            MaxHeight="190"
+            MinHeight="64"
+            SelectionMode="Single"
+          >
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DatabaseItemViewModel">
+                <Grid ColumnDefinitions="*,90,200" ColumnSpacing="10">
+                  <!-- A TextBlock, not CheckBox.Content: underscores in database names would be eaten as access keys. -->
+                  <CheckBox IsChecked="{Binding IsSelected}">
+                    <TextBlock Text="{Binding Name}" />
+                  </CheckBox>
+                  <TextBlock
+                    Grid.Column="1"
+                    Text="{Binding SizeText}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                  />
+                  <TextBox
+                    Grid.Column="2"
+                    Text="{Binding LocalName}"
+                    PlaceholderText="Local name"
+                    Margin="0"
+                    MinHeight="28"
+                  />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Grid.Row="1" Spacing="6">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button
+            Classes="primary"
+            Content="Replicate selected databases"
+            Command="{Binding StartCommand}"
+            IsVisible="{Binding IsIdle}"
+          />
+          <Button
+            Content="Cancel"
+            Command="{Binding StartCancelCommand}"
+            IsVisible="{Binding IsRunning}"
+          />
+          <TextBlock
+            Text="{Binding StatusMessage}"
+            VerticalAlignment="Center"
+            Opacity="0.8"
+            TextWrapping="Wrap"
+          />
+        </StackPanel>
+        <TextBlock
+          Text="{Binding ErrorMessage}"
+          Foreground="#D13438"
+          TextWrapping="Wrap"
+          IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+        />
+      </StackPanel>
+
+      <Border
+        Grid.Row="2"
+        Classes="card"
+        IsVisible="{Binding PhaseText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+      >
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,110" RowSpacing="6">
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <TextBlock Classes="h2" Text="{Binding DatabaseProgress}" Margin="0" />
+            <TextBlock Grid.Column="1" Text="{Binding EtaText}" Opacity="0.7" />
+          </Grid>
+          <TextBlock Grid.Row="1" Text="{Binding PhaseText}" FontWeight="SemiBold" />
+          <ProgressBar
+            Grid.Row="2"
+            Value="{Binding OverallPercent}"
+            Minimum="0"
+            Maximum="100"
+            Height="10"
+          />
+          <ListBox Grid.Row="3" ItemsSource="{Binding Tables}" Margin="0,6,0,0">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:TableRowViewModel">
+                <Grid ColumnDefinitions="*,175,110,64" ColumnSpacing="12">
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="1" Text="{Binding Detail}" Opacity="0.7" />
+                  <ProgressBar
+                    Grid.Column="2"
+                    Value="{Binding Percent}"
+                    Maximum="100"
+                    Height="6"
+                    MinWidth="0"
+                    VerticalAlignment="Center"
+                  />
+                  <TextBlock Grid.Column="3" Text="{Binding Status}" Opacity="0.8" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Grid.Row="4" Text="{Binding StatsText}" FontWeight="SemiBold" />
+          <ListBox Grid.Row="5" ItemsSource="{Binding Log}" FontSize="12" Classes="log" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -9,6 +9,9 @@ using PgCopy.Core.Snapshots;
 using PgCopy.Core.Target;
 using Spectre.Console;
 
+if (Console.IsOutputRedirected)
+    AnsiConsole.Profile.Width = 240; // keep piped/CI output from being truncated
+
 var secrets = new FileSecretStore();
 var profiles = new ProfileStore(secrets);
 
@@ -174,7 +177,12 @@ cloneCmd.SetAction(
         foreach (var name in names)
         {
             var request = new CloneRequest(source, name, alias ?? name, target, options);
-            exit |= await ConsoleRunner.RunAsync(request, ct);
+            var code = await ConsoleRunner.RunAsync(request, ct);
+            exit |= code;
+            if (code == 0)
+                AnsiConsole.MarkupLine(
+                    $"[green]Connect:[/] {Markup.Escape(target.Admin.ForDatabase(request.TargetDatabase).ToUri())}"
+                );
         }
         return exit;
     }
@@ -191,6 +199,20 @@ dockerStatus.SetAction(
         return 0;
     }
 );
+var dockerUp = new Command("up", "Start the container (creating it if needed) and print how to connect") { majorArg };
+dockerUp.SetAction(
+    async (parse, ct) =>
+    {
+        var server = new DockerTargetServer(secrets);
+        await server.PrepareAsync(
+            parse.GetValue(majorArg),
+            m => AnsiConsole.MarkupLine("[grey]" + Markup.Escape(m) + "[/]"),
+            ct
+        );
+        Console.WriteLine(server.Admin.ToUri());
+        return 0;
+    }
+);
 var dockerStop = new Command("stop", "Stop the container") { majorArg };
 dockerStop.SetAction(
     async (parse, ct) =>
@@ -199,6 +221,7 @@ dockerStop.SetAction(
         return 0;
     }
 );
+dockerCmd.Subcommands.Add(dockerUp);
 dockerCmd.Subcommands.Add(dockerStatus);
 dockerCmd.Subcommands.Add(dockerStop);
 

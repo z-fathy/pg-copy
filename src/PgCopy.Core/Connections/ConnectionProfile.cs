@@ -108,5 +108,19 @@ public sealed record ConnectionProfile
         return b.ConnectionString;
     }
 
+    /// <summary>A libpq-style URI (credentials percent-encoded) that round-trips through <see cref="Parse"/>.</summary>
+    public string ToUri(bool includePassword = true)
+    {
+        var user = Uri.EscapeDataString(Username);
+        var credentials = includePassword && Password is not null ? $"{user}:{Uri.EscapeDataString(Password)}" : user;
+        var ssl = SslMode switch
+        {
+            "VerifyCA" => "verify-ca",
+            "VerifyFull" => "verify-full",
+            var m => m.ToLowerInvariant(),
+        };
+        return $"postgres://{credentials}@{Host}:{Port}/{Uri.EscapeDataString(Database)}?sslmode={ssl}";
+    }
+
     public override string ToString() => $"{Username}@{Host}:{Port}/{Database}";
 }

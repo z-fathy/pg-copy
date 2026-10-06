@@ -26,6 +26,25 @@ public class ConnectionProfileTests
     }
 
     [Fact]
+    public void ToUriRoundTripsThroughParseWithSpecialCharacters()
+    {
+        var original = new ConnectionProfile
+        {
+            Host = "127.0.0.1",
+            Port = 55432,
+            Username = "app@corp",
+            Password = "p:ss/w@rd#1",
+            Database = "tenant one",
+            SslMode = "VerifyFull",
+        };
+
+        var parsed = ConnectionProfile.Parse(original.ToUri());
+
+        Assert.Equal(original, parsed);
+        Assert.DoesNotContain("p:ss", original.ToUri(includePassword: false));
+    }
+
+    [Fact]
     public void ParsesKeyValueString()
     {
         var p = ConnectionProfile.Parse("Host=h;Port=5555;Username=u;Password=pw;Database=d");

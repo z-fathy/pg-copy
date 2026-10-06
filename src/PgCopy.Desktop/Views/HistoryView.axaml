@@ -1,0 +1,32 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:PgCopy.Desktop.ViewModels"
+  x:Class="PgCopy.Desktop.Views.HistoryView"
+  x:DataType="vm:HistoryViewModel"
+>
+  <Grid RowDefinitions="Auto,*" Margin="16" RowSpacing="10">
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBlock Classes="h2" FontSize="18" Text="Previous runs" />
+      <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" />
+    </Grid>
+    <ListBox Grid.Row="1" ItemsSource="{Binding Runs}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:HistoryRow">
+          <Border Classes="card" Margin="0,0,0,6">
+            <StackPanel Spacing="2">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{Binding When}" Opacity="0.65" />
+              </Grid>
+              <TextBlock Text="{Binding Outcome}" FontSize="12" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
+              <TextBlock Classes="caption" Text="{Binding Phases}" TextWrapping="Wrap" />
+              <TextBlock Classes="caption" Text="{Binding Endpoint}" />
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

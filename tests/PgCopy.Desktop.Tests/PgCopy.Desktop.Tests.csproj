@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <!-- Avalonia.Headless.XUnit is built on xUnit v3, whose test projects are executables. -->
+        <OutputType>Exe</OutputType>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Avalonia.Headless.XUnit" />
+        <ProjectReference Include="..\..\src\PgCopy.Desktop\PgCopy.Desktop.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+</Project>

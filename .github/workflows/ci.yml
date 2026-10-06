@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  windows:
+    name: Build, format, unit + UI tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet tool restore
+      - name: Formatting
+        run: dotnet csharpier check .
+      - run: dotnet build -c Release
+      - name: Unit tests
+        run: dotnet test tests/PgCopy.Core.Tests -c Release --no-build
+      - name: Headless UI tests
+        run: dotnet test tests/PgCopy.Desktop.Tests -c Release --no-build
+
+  integration:
+    name: Integration tests against real PostgreSQL (Linux)
+    runs-on: ubuntu-latest
+    services:
+      source:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+      target:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5434:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGCOPY_IT_SOURCE: postgres://postgres:postgres@127.0.0.1:5433/postgres
+      PGCOPY_IT_TARGET: postgres://postgres:postgres@127.0.0.1:5434/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: PostgreSQL 16 client tools (pg_dump, pg_restore, psql)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16 || sudo apt-get install -y postgresql-client
+      - run: dotnet build -c Release
+      - name: Integration tests (schema zoo clone + equivalence checks)
+        run: dotnet test tests/PgCopy.IntegrationTests -c Release --no-build
+      - name: Desktop view-model end-to-end test
+        run: dotnet test tests/PgCopy.Desktop.Tests -c Release --no-build

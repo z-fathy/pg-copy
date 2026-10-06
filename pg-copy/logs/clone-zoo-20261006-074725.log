@@ -1,0 +1,16 @@
+07:47:26.013 == Preflight
+07:47:26.340 Source: PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1), 22.4 MB, 15 tables to copy.
+07:47:26.363 Target: existing server 127.0.0.1:5434.
+07:47:26.373 == CreateDatabase
+07:47:26.451 == Schema
+07:47:26.547 Using local PostgreSQL tools (/usr/bin).
+07:47:26.796 == DataCopy
+07:47:26.820 Copying 2 large objects...
+07:47:27.057 == FinishIndexes
+07:47:27.062    7 MB, 0.0 MB/s, tables 15/15, indexes 5
+07:47:27.143 == ForeignKeys
+07:47:27.161 == SequencesAndLargeObjects
+07:47:27.170 == PostData
+07:47:27.241 Refreshing 1 materialized view(s)...
+07:47:27.254 == Analyze
+07:47:27.322 == Swap

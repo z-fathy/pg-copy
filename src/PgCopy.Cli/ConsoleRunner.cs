@@ -12,8 +12,6 @@ internal static class ConsoleRunner
 {
     public static async Task<int> RunAsync(CloneRequest request, CancellationToken ct)
     {
-        if (Console.IsOutputRedirected)
-            AnsiConsole.Profile.Width = 240;
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         Console.CancelKeyPress += (_, e) =>
         {
@@ -25,7 +23,14 @@ internal static class ConsoleRunner
             $"[bold]Cloning[/] {Markup.Escape(request.SourceDatabase)} -> {Markup.Escape(request.TargetDatabase)}"
         );
         var state = new DashboardState();
-        var progress = new Progress<CloneEvent>(state.Apply);
+        using var fileLog = new FileLogProgress(request.SourceDatabase);
+        var clock = Stopwatch.StartNew();
+        var progress = new Progress<CloneEvent>(e =>
+        {
+            fileLog.Report(e);
+            state.Apply(e);
+        });
+        var history = new RunHistory();
         CloneReport? report = null;
         Exception? failure = null;
 
@@ -63,6 +68,19 @@ internal static class ConsoleRunner
                 });
         }
 
+        if (failure is not null and not OperationCanceledException)
+        {
+            fileLog.WriteLine("FAILED: " + failure);
+            history.Append(
+                RunRecord.FromFailure(
+                    request.Source.ToString(),
+                    request.SourceDatabase,
+                    request.TargetDatabase,
+                    failure.Message,
+                    clock.Elapsed
+                )
+            );
+        }
         if (failure is OperationCanceledException)
         {
             AnsiConsole.MarkupLine("[yellow]Cancelled.[/] The previous local copy (if any) was left untouched.");
@@ -77,7 +95,9 @@ internal static class ConsoleRunner
                 AnsiConsole.WriteException(failure);
             return 1;
         }
+        history.Append(RunRecord.FromReport(request.Source.ToString(), report!));
         PrintReport(report!);
+        AnsiConsole.MarkupLine($"[grey]Log: {Markup.Escape(fileLog.Path)}[/]");
         return 0;
     }
 

@@ -1,0 +1,48 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:PgCopy.Desktop.ViewModels"
+  x:Class="PgCopy.Desktop.Views.SettingsView"
+  x:DataType="vm:SettingsViewModel"
+>
+  <StackPanel Margin="16" Spacing="12" MaxWidth="760" HorizontalAlignment="Left">
+    <TextBlock Classes="h2" FontSize="18" Text="Settings" />
+    <Border Classes="card">
+      <StackPanel>
+        <TextBlock Classes="h2" Text="PostgreSQL client tools" />
+        <TextBlock
+          Classes="caption"
+          TextWrapping="Wrap"
+          Margin="0,0,0,6"
+          Text="Folder containing pg_dump and pg_restore (same or newer major version than the source). Leave empty to auto-detect, falling back to the tools inside the Docker container."
+        />
+        <TextBox
+          Text="{Binding PgBinDirectory}"
+          PlaceholderText="C:\Program Files\PostgreSQL\17\bin"
+        />
+      </StackPanel>
+    </Border>
+    <Border Classes="card">
+      <StackPanel>
+        <TextBlock Classes="h2" Text="Docker image override" />
+        <TextBlock
+          Classes="caption"
+          TextWrapping="Wrap"
+          Margin="0,0,0,6"
+          Text="Use when the source needs extensions the stock image lacks, e.g. postgis/postgis:16-3.4 or pgvector/pgvector:pg16. Applies to newly created containers."
+        />
+        <TextBox Text="{Binding DockerImage}" PlaceholderText="postgres:16" />
+      </StackPanel>
+    </Border>
+    <Button Content="Save settings" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+    <TextBlock Text="{Binding Message}" Opacity="0.8" />
+    <Border Classes="card">
+      <StackPanel Spacing="2">
+        <TextBlock Classes="caption" Text="Data folder" />
+        <SelectableTextBlock Text="{Binding DataDirectory}" />
+        <TextBlock Classes="caption" Text="Logs" Margin="0,8,0,0" />
+        <SelectableTextBlock Text="{Binding LogDirectory}" />
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

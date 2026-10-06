@@ -1,0 +1,22 @@
+07:47:29.076 == Preflight
+07:47:29.209 FAILED: System.InvalidOperationException: Cannot connect to source postgres@127.0.0.1:5433/nope: 3D000: database "nope" does not exist
+ ---> Npgsql.PostgresException (0x80004005): 3D000: database "nope" does not exist
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.Internal.NpgsqlConnector.<Open>g__OpenCore|209_0(NpgsqlConnector conn, String username, SslMode sslMode, GssEncryptionMode gssEncMode, NpgsqlTimeout timeout, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.Internal.NpgsqlConnector.Open(NpgsqlTimeout timeout, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.UnpooledDataSource.Get(NpgsqlConnection conn, NpgsqlTimeout timeout, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlConnection.<Open>g__OpenAsync|42_0(Boolean async, CancellationToken cancellationToken)
+   at PgCopy.Core.Orchestration.CloneJob.Run.OpenWithContextAsync(NpgsqlConnection conn, String what, CancellationToken ct) in /home/user/pg-copy/src/PgCopy.Core/Orchestration/CloneJob.cs:line 366
+  Exception data:
+    Severity: FATAL
+    SqlState: 3D000
+    MessageText: database "nope" does not exist
+    File: postinit.c
+    Line: 1021
+    Routine: InitPostgres
+   --- End of inner exception stack trace ---
+   at PgCopy.Core.Orchestration.CloneJob.Run.OpenWithContextAsync(NpgsqlConnection conn, String what, CancellationToken ct) in /home/user/pg-copy/src/PgCopy.Core/Orchestration/CloneJob.cs:line 370
+   at PgCopy.Core.Orchestration.CloneJob.Run.ExecuteAsync(CancellationToken ct) in /home/user/pg-copy/src/PgCopy.Core/Orchestration/CloneJob.cs:line 80
+   at PgCopy.Core.Orchestration.CloneJob.Run.ExecuteAsync(CancellationToken ct) in /home/user/pg-copy/src/PgCopy.Core/Orchestration/CloneJob.cs:line 347
+   at PgCopy.Cli.ConsoleRunner.<>c__DisplayClass0_0.<<RunAsync>g__Work|2>d.MoveNext() in /home/user/pg-copy/src/PgCopy.Cli/ConsoleRunner.cs:line 43

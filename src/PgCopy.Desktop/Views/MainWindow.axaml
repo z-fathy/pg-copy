@@ -1,0 +1,28 @@
+<Window
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:PgCopy.Desktop.ViewModels"
+  xmlns:v="using:PgCopy.Desktop.Views"
+  x:Class="PgCopy.Desktop.Views.MainWindow"
+  x:DataType="vm:MainViewModel"
+  Title="pg-copy — fast PostgreSQL replication"
+  Width="1320"
+  Height="860"
+  MinWidth="1060"
+  MinHeight="640"
+>
+  <TabControl Margin="8" TabStripPlacement="Top">
+    <TabItem Header="Clone">
+      <v:CloneView DataContext="{Binding Clone}" />
+    </TabItem>
+    <TabItem Header="Snapshots">
+      <v:SnapshotsView DataContext="{Binding Snapshots}" />
+    </TabItem>
+    <TabItem Header="History">
+      <v:HistoryView DataContext="{Binding History}" />
+    </TabItem>
+    <TabItem Header="Settings">
+      <v:SettingsView DataContext="{Binding Settings}" />
+    </TabItem>
+  </TabControl>
+</Window>

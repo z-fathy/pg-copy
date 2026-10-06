@@ -1,0 +1,1 @@
+[{"Name":"dev","Host":"127.0.0.1","Port":5433,"Username":"postgres","Database":"postgres","SslMode":"Prefer"}]

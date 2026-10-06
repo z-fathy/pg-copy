@@ -88,13 +88,24 @@ public sealed class DockerTargetServer : ITargetServer
         await ExitLoadModeAsync(ct); // A previous run may have crashed while in load mode.
     }
 
-    private List<string> BuildRunArgs(string name, int major, string password)
+    private List<string> BuildRunArgs(string name, int major, string password) =>
+        BuildRunArgs(name, major, password, _imageOverride, MemoryBytes, CpuCount);
+
+    internal static List<string> BuildRunArgs(
+        string name,
+        int major,
+        string password,
+        string? imageOverride,
+        long memoryBytes,
+        int cpuCount
+    )
     {
-        var sharedBuffersMb = Math.Clamp(MemoryBytes / 4 >> 20, 128, 4096);
-        var maintenanceMb = Math.Clamp(MemoryBytes / 8 >> 20, 64, 2048);
-        var workers = Math.Max(8, CpuCount * 2);
+        var sharedBuffersMb = Math.Clamp(memoryBytes / 4 >> 20, 128, 4096);
+        var maintenanceMb = Math.Clamp(memoryBytes / 8 >> 20, 64, 2048);
+        var workers = Math.Max(8, cpuCount * 2);
+        // PostgreSQL 18 images moved PGDATA under a versioned directory, so the volume mounts one level up.
         var dataPath = major >= 18 ? "/var/lib/postgresql" : "/var/lib/postgresql/data";
-        var image = _imageOverride ?? $"postgres:{major}";
+        var image = imageOverride ?? $"postgres:{major}";
         return
         [
             "run",
@@ -134,7 +145,7 @@ public sealed class DockerTargetServer : ITargetServer
         ];
     }
 
-    private static int ParsePort(string output)
+    internal static int ParsePort(string output)
     {
         var line = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)[0].Trim();
         return int.Parse(line[(line.LastIndexOf(':') + 1)..]);
